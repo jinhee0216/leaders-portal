@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>리더스론 포털 (Netlify)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100%; }
+    .card { border-radius: 16px; }
+    .amount { text-align:right; font-variant-numeric: tabular-nums; white-space:nowrap; }
+  </style>
+</head>
+<body class="bg-slate-50">
+  <div class="max-w-5xl mx-auto p-4">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <div class="text-xl font-bold text-slate-900">리더스론 포털</div>
+        <div id="updatedAt" class="text-xs text-slate-500 mt-1">-</div>
+      </div>
+      <div class="text-xs text-slate-500">
+        token: <span id="tok" class="font-mono"></span>
+      </div>
+    </div>
+
+    <div class="mt-4 bg-white shadow-sm border border-slate-200 card p-4">
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="min-w-[200px]">
+          <div class="text-xs text-slate-500">담당자</div>
+          <select id="mgrSelect" class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2"></select>
+        </div>
+        <button id="btnApply" class="px-4 py-2 rounded-xl bg-slate-900 text-white">적용</button>
+        <button id="btnReload" class="px-4 py-2 rounded-xl border border-slate-300 bg-white">새로고침</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+        <div class="border border-slate-200 rounded-2xl p-4">
+          <div class="text-xs text-slate-500">관리 업체수</div>
+          <div id="k_total" class="text-2xl font-bold mt-1">-</div>
+        </div>
+        <div class="border border-slate-200 rounded-2xl p-4">
+          <div class="text-xs text-slate-500">미체크 업체수</div>
+          <div id="k_unchecked" class="text-2xl font-bold mt-1">-</div>
+        </div>
+        <div class="border border-slate-200 rounded-2xl p-4">
+          <div class="text-xs text-slate-500">금액 합계</div>
+          <div id="k_amount" class="text-2xl font-bold mt-1 amount">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 bg-white shadow-sm border border-slate-200 card p-4">
+      <div class="flex items-center justify-between">
+        <div class="font-semibold text-slate-900">만기예정고객 목록</div>
+        <div class="text-xs text-slate-500" id="listMeta">-</div>
+      </div>
+
+      <div class="mt-3 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs text-slate-500 border-b">
+            <tr>
+              <th class="py-2 text-left">회차</th>
+              <th class="py-2 text-left">상호명</th>
+              <th class="py-2 text-left">고객명</th>
+              <th class="py-2 text-left">연락처</th>
+              <th class="py-2 text-left">결과</th>
+              <th class="py-2 text-right">상세</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between mt-3">
+        <button id="prev" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm">이전</button>
+        <div class="text-xs text-slate-500" id="pageInfo">-</div>
+        <button id="next" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm">다음</button>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 hidden">
+      <div class="absolute inset-0 bg-black/40" id="modalBackdrop"></div>
+      <div class="absolute inset-x-0 top-10 mx-auto max-w-2xl bg-white rounded-2xl shadow-lg p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">상세</div>
+          <button id="modalClose" class="px-3 py-1 rounded-xl border">닫기</button>
+        </div>
+        <pre id="modalBody" class="mt-3 text-xs bg-slate-50 border rounded-xl p-3 overflow-auto max-h-[60vh]">-</pre>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ✅ Netlify Functions 엔드포인트(고정)
+  const API = "/.netlify/functions/gas";
+
+  const $ = (id) => document.getElementById(id);
+
+  function token() {
+    return new URLSearchParams(location.search).get("t") || "";
+  }
+
+  function money(n){
+    const v = Number(n || 0);
+    return v.toLocaleString("ko-KR") + "원";
+  }
+
+  async function apiGet(params){
+    const u = new URL(API, location.origin);
+    Object.entries(params).forEach(([k,v]) => u.searchParams.set(k, v));
+    const res = await fetch(u.toString());
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "API_ERROR");
+    return json.data;
+  }
+
+  let state = { offset: 0, limit: 30, total: 0 };
+
+  async function loadDashboard(){
+    const t = token();
+    $("tok").textContent = t || "(없음)";
+
+    const data = await apiGet({ action: "dashboard", t });
+
+    $("updatedAt").textContent = "업데이트: " + (data.updatedAt || "-");
+
+    const sel = $("mgrSelect");
+    sel.innerHTML = "";
+    (data.managers || []).forEach(m => {
+      const op = document.createElement("option");
+      op.value = m;
+      op.textContent = m;
+      sel.appendChild(op);
+    });
+
+    const defaultMgr = data.defaultManager || (data.managers||[])[0] || "";
+    sel.value = defaultMgr;
+
+    renderCard(data.card || {});
+    state.offset = 0;
+    await loadList();
+  }
+
+  function renderCard(card){
+    $("k_total").textContent = (card.counts?.total ?? 0).toLocaleString("ko-KR");
+    $("k_unchecked").textContent = (card.counts?.unchecked ?? 0).toLocaleString("ko-KR");
+    $("k_amount").textContent = money(card.amounts?.total ?? 0);
+  }
+
+  async function applyManager(){
+    const t = token();
+    const mgr = $("mgrSelect").value;
+    const card = await apiGet({ action: "managerCard", t, mgr });
+    renderCard(card || {});
+    state.offset = 0;
+    await loadList();
+  }
+
+  async function loadList(){
+    const t = token();
+    const mgr = $("mgrSelect").value;
+
+    const res = await apiGet({
+      action: "listDue",
+      t,
+      mgr,
+      limit: String(state.limit),
+      offset: String(state.offset),
+    });
+
+    state.total = res.total;
+    $("listMeta").textContent = `${res.manager} 담당 / 총 ${res.total.toLocaleString("ko-KR")}건`;
+
+    const start = res.total ? (res.offset + 1) : 0;
+    const end = Math.min(res.total, res.offset + res.items.length);
+    $("pageInfo").textContent = `${start} - ${end} / ${res.total}`;
+
+    const tb = $("tbody");
+    tb.innerHTML = "";
+
+    res.items.forEach(it => {
+      const tr = document.createElement("tr");
+      tr.className = "border-b";
+      tr.innerHTML = `
+        <td class="py-2">${it.cycle || ""}</td>
+        <td class="py-2">${it.storeName || ""}</td>
+        <td class="py-2">${it.customerName || ""}</td>
+        <td class="py-2">${it.phone || ""}</td>
+        <td class="py-2">${it.result || ""}</td>
+        <td class="py-2 text-right">
+          <button class="text-xs px-3 py-1 rounded-lg border border-slate-200 bg-white" data-row="${it.row}">보기</button>
+        </td>
+      `;
+      tb.appendChild(tr);
+    });
+
+    tb.querySelectorAll("button[data-row]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const t = token();
+        const row = btn.getAttribute("data-row");
+        $("modalBody").textContent = "로딩중...";
+        openModal();
+        try {
+          const d = await apiGet({ action: "detail", t, row });
+          $("modalBody").textContent = JSON.stringify(d.values, null, 2);
+        } catch (e) {
+          $("modalBody").textContent = "조회 실패: " + (e.message || e);
+        }
+      });
+    });
+
+    $("prev").disabled = (state.offset <= 0);
+    $("next").disabled = (state.offset + state.limit >= state.total);
+  }
+
+  function openModal(){
+    $("modal").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal(){
+    $("modal").classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  $("btnApply").addEventListener("click", applyManager);
+  $("btnReload").addEventListener("click", loadDashboard);
+  $("prev").addEventListener("click", async () => { state.offset = Math.max(0, state.offset - state.limit); await loadList(); });
+  $("next").addEventListener("click", async () => { state.offset = state.offset + state.limit; await loadList(); });
+  $("modalClose").addEventListener("click", closeModal);
+  $("modalBackdrop").addEventListener("click", closeModal);
+
+  loadDashboard().catch(err => alert("로딩 실패: " + (err.message || err)));
+</script>
+</body>
+</html>
