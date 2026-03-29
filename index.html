@@ -99,62 +99,74 @@
 <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
   <!-- 진행 카드 -->
   <div class="bg-white border border-slate-200 card p-4">
-    <div class="space-y-4">
+    <div class="space-y-3">
 
       <div>
         <div class="text-[15px] font-bold text-slate-900">진행 업체</div>
-        <div class="text-[11px] text-slate-500 mt-1">＊ 사고채권을 제외 현재 진행중인 채권</div>
-        <div id="progCount" class="text-lg font-bold text-slate-900 mt-2">-건</div>
-        <div id="progSum" class="text-xl font-bold text-blue-900 amount mt-1">-원</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">＊ 사고채권을 제외 현재 진행중인 채권</div>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <div id="progCount" class="text-lg font-bold text-slate-900 leading-none">-건</div>
+          <div id="progSum" class="text-lg font-bold text-blue-900 amount leading-none">-원</div>
+        </div>
       </div>
 
       <div class="h-px bg-slate-100"></div>
 
       <div>
         <div class="text-[15px] font-bold text-slate-900">신규 업체</div>
-        <div class="text-[11px] text-slate-500 mt-1">＊ 1차 신규 기표 업체</div>
-        <div id="newCount" class="text-lg font-bold text-slate-900 mt-2">-건</div>
-        <div id="newSum" class="text-xl font-bold text-blue-900 amount mt-1">-원</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">＊ 1차 신규 기표 업체</div>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <div id="newCount" class="text-lg font-bold text-slate-900 leading-none">-건</div>
+          <div id="newSum" class="text-lg font-bold text-blue-900 amount leading-none">-원</div>
+        </div>
       </div>
 
       <div class="h-px bg-slate-100"></div>
 
       <div>
         <div class="text-[15px] font-bold text-slate-900">재대출 업체</div>
-        <div class="text-[11px] text-slate-500 mt-1">＊ 2차 이상 재대출 기표 업체</div>
-        <div id="reCount" class="text-lg font-bold text-slate-900 mt-2">-건</div>
-        <div id="reSum" class="text-xl font-bold text-blue-900 amount mt-1">-원</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">＊ 2차 이상 재대출 기표 업체</div>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <div id="reCount" class="text-lg font-bold text-slate-900 leading-none">-건</div>
+          <div id="reSum" class="text-lg font-bold text-blue-900 amount leading-none">-원</div>
+        </div>
       </div>
 
     </div>
   </div>
 
-    <!-- 종료 카드 -->
+  <!-- 종료 카드 -->
   <div class="bg-white border border-slate-200 card p-4">
-    <div class="space-y-4">
+    <div class="space-y-3">
 
       <div>
         <div class="text-[15px] font-bold text-slate-900">종료업체</div>
-        <div class="text-[11px] text-slate-500 mt-1">＊ 정상 상환 후 종료 업체</div>
-        <div id="endCount" class="text-lg font-bold text-slate-900 mt-2">-건</div>
-        <div id="endSum" class="text-xl font-bold text-blue-900 amount mt-1">-원</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">＊ 정상 상환 후 종료 업체</div>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <div id="endCount" class="text-lg font-bold text-slate-900 leading-none">-건</div>
+          <div id="endSum" class="text-lg font-bold text-blue-900 amount leading-none">-원</div>
+        </div>
       </div>
 
       <div class="h-px bg-slate-100"></div>
 
       <div>
         <div class="text-[15px] font-bold text-slate-900">종료재신청 기표</div>
-        <div class="text-[11px] text-slate-500 mt-1">＊ 총 종료후 재대출 신청업체</div>
-        <div id="endReGipoCount" class="text-lg font-bold text-slate-900 mt-2">-건</div>
-        <div id="endReGipoSum" class="text-xl font-bold text-blue-900 amount mt-1">-원</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">＊ 총 종료후 재대출 신청업체</div>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <div id="endReGipoCount" class="text-lg font-bold text-slate-900 leading-none">-건</div>
+          <div id="endReGipoSum" class="text-lg font-bold text-blue-900 amount leading-none">-원</div>
+        </div>
       </div>
 
       <div class="h-px bg-slate-100"></div>
 
-      <div class="bg-red-50 border border-red-100 rounded-2xl px-4 py-4">
+      <div class="bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
         <div class="text-[15px] font-bold text-red-700">사고 채권</div>
-        <div id="accCount" class="text-lg font-bold text-red-600 mt-2">-건</div>
-        <div id="accSum" class="text-xl font-bold text-red-700 amount mt-1">-원</div>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <div id="accCount" class="text-lg font-bold text-red-600 leading-none">-건</div>
+          <div id="accSum" class="text-lg font-bold text-red-700 amount leading-none">-원</div>
+        </div>
       </div>
 
     </div>
