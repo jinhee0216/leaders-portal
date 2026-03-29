@@ -7,14 +7,24 @@ function getToken() {
 
 async function loadSummary() {
   const t = getToken();
-  const url = `${API_URL}?action=summary&t=${encodeURIComponent(t)}`;
+  const url = `${API_URL}?action=dashboard&t=${encodeURIComponent(t)}`;
 
   const res = await fetch(url);
   const data = await res.json();
 
   console.log("API 응답:", data);
 
-  // TODO: 여기서 data.summary로 화면에 값 넣기
-}
+  if (!data.ok) {
+    console.error("API 오류:", data.error);
+    return;
+  }
 
+  const summary = data.data;
+  console.log("대시보드 데이터:", summary);
+
+  // 예시
+  // data.data.card 안에 KPI 값이 들어있음
+  // data.data.managers 에 담당자 목록
+  // data.data.defaultManager 에 기본 담당자
+}
 document.addEventListener("DOMContentLoaded", loadSummary);
